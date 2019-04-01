@@ -16,6 +16,7 @@ import com.kms.katalon.core.webui.driver.DriverFactory as DF
 import internal.GlobalVariable as GlobalVariable
 
 import com.applitools.eyes.selenium.Eyes as Eyes
+import com.applitools.eyes.TestResults as TestResults
 import com.applitools.eyes.RectangleSize as RectangleSize
 
 import org.openqa.selenium.WebDriver as WebDriver
@@ -37,7 +38,38 @@ WebUI.click(findTestObject('Object Repository/Page_Applitools/button_Click me'))
 
 eyes.checkWindow()
 
-eyes.close()
+TestResults status = eyes.close(false)
+
+TestResulsHandler(status)
+
 eyes.abortIfNotClosed()
 WebUI.closeBrowser()
 
+
+static private void TestResultsHandler(TestResults result){
+	String resultStr
+	String url
+	if (result == null) {
+		resultStr = "Tests aborted"
+		url = "url not defined"
+	} else {
+		url = result.getUrl()
+		int totalSteps = result.getSteps()
+		
+		if (result.isNew()) {
+			resultStr = "New Baseline created: ${totalSteps} steps"
+		} else if (result.isPassed()) {
+		
+			resultStr = "All steps passed:     ${totalSteps} steps"
+		} else {
+			StringBuilder sb = new StringBuilder()
+			sb.append(  "Tests Failed     :     ${totalSteps} steps\n")
+			sb.append(" matches=   ${result.getMatches()}\n")
+			sb.append(" missing=   ${result.getMissing()}\n")
+			sb.append(" mismatches=${result.getMismatches()}\n")
+			resultStr = sb.toString()
+		}
+		resultStr += "\n" + "Test Results at " + url
+		WebUI.comment(resultStr)
+	}
+}
